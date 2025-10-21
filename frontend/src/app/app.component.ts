@@ -238,6 +238,21 @@ export class AppComponent implements OnInit {
     return drip.id;
   }
 
+  getTemplateName(templateId: string): string {
+    const template = this.emailTemplates.find(t => t.id === templateId);
+    return template?.name || 'Unknown Template';
+  }
+
+  getTemplateDescription(templateId: string): string {
+    const template = this.emailTemplates.find(t => t.id === templateId);
+    return template?.description || '';
+  }
+
+  getTemplateContent(templateId: string): string {
+    const template = this.emailTemplates.find(t => t.id === templateId);
+    return template?.content || '';
+  }
+
   private resetTemplateForm(): void {
     this.templateForm = {
       name: '',

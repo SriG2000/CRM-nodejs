@@ -132,13 +132,13 @@
             <div class="preview-card" *ngIf="drip.template">
               <div class="preview-header">
                 <div>
-                  <strong>{{ emailTemplates.find((t) => t.id === drip.template)?.name }}</strong>
+                  <strong>{{ getTemplateName(drip.template) }}</strong>
                 </div>
                 <button type="button" class="link" (click)="previewTemplate(drip.template)">
                   Preview
                 </button>
               </div>
-              <p>{{ emailTemplates.find((t) => t.id === drip.template)?.description }}</p>
+              <p>{{ getTemplateDescription(drip.template) }}</p>
             </div>
           </div>
 
@@ -211,13 +211,13 @@
   <div class="modal-backdrop" *ngIf="selectedTemplatePreview as templateId">
     <div class="modal-panel">
       <div class="modal-header">
-        <h2>{{ emailTemplates.find((t) => t.id === templateId)?.name }}</h2>
+        <h2>{{ getTemplateName(templateId) }}</h2>
         <button type="button" class="btn btn-danger" (click)="closePreview()">✕</button>
       </div>
       <div class="modal-content">
-        <p>{{ emailTemplates.find((t) => t.id === templateId)?.description }}</p>
+        <p>{{ getTemplateDescription(templateId) }}</p>
         <div class="preview-body">
-          {{ emailTemplates.find((t) => t.id === templateId)?.content || 'Template content preview not available.' }}
+          {{ getTemplateContent(templateId) || 'Template content preview not available.' }}
         </div>
       </div>
     </div>

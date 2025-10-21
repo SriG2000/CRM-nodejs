@@ -42,7 +42,7 @@ app.get('/api/templates', (req, res) => {
 });
 
 app.post('/api/templates', (req, res) => {
-  const { name, description, content } = req.body;
+  const { name, description, content, category, logoUrl, signature } = req.body;
 
   if (!name || !description || !content) {
     return res.status(400).json({ error: 'Name, description, and content are required.' });
@@ -57,7 +57,25 @@ app.post('/api/templates', (req, res) => {
     return res.status(409).json({ error: 'A template with this name already exists.' });
   }
 
-  const newTemplate = { id, name, description, content };
+  const newTemplate = { 
+    id, 
+    name, 
+    description, 
+    content,
+    category: category || 'welcome',
+    logoUrl: logoUrl || '',
+    signature: signature || {
+      name: '',
+      title: '',
+      company: '',
+      email: '',
+      phone: '',
+      address: '',
+      photoUrl: ''
+    },
+    createdAt: new Date().toISOString()
+  };
+  
   templates.push(newTemplate);
 
   res.status(201).json(newTemplate);

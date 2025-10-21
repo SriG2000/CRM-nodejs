@@ -9,6 +9,17 @@ interface TemplateFormState {
   name: string;
   description: string;
   content: string;
+  category: string;
+  logoUrl?: string;
+  signature: {
+    name: string;
+    title: string;
+    company: string;
+    email: string;
+    phone: string;
+    address: string;
+    photoUrl?: string;
+  };
 }
 
 @Component({
@@ -36,11 +47,23 @@ export class CampaignComponent implements OnInit {
   showTemplateModal = false;
   showCreateModal = false;
   selectedTemplatePreview: string | null = null;
+  activeTab: 'basic' | 'content' | 'signature' | 'preview' = 'basic';
 
   templateForm: TemplateFormState = {
     name: '',
     description: '',
-    content: ''
+    content: '',
+    category: 'welcome',
+    logoUrl: '',
+    signature: {
+      name: '',
+      title: '',
+      company: '',
+      email: '',
+      phone: '',
+      address: '',
+      photoUrl: ''
+    }
   };
 
   statusMessage: string | null = null;
@@ -254,15 +277,172 @@ export class CampaignComponent implements OnInit {
     return template?.content || '';
   }
 
+  getIntervalLabel(intervalValue: number): string {
+    const interval = this.timeIntervals.find(t => t.value === intervalValue);
+    return interval?.label || 'N/A';
+  }
+
   goBackToJobSeekers(): void {
     this.router.navigate(['/']);
+  }
+
+  // Template Creator Methods
+  onLogoUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.templateForm.logoUrl = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeLogo(): void {
+    this.templateForm.logoUrl = '';
+  }
+
+  onSignaturePhotoUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.templateForm.signature.photoUrl = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeSignaturePhoto(): void {
+    this.templateForm.signature.photoUrl = '';
+  }
+
+  onContentChange(event: Event): void {
+    const target = event.target as HTMLElement;
+    this.templateForm.content = target.innerHTML;
+  }
+
+  formatText(command: string): void {
+    document.execCommand(command, false);
+  }
+
+  insertHeading(tag: string): void {
+    document.execCommand('formatBlock', false, tag);
+  }
+
+  insertLink(): void {
+    const url = prompt('Enter URL:');
+    if (url) {
+      document.execCommand('createLink', false, url);
+    }
+  }
+
+  insertImage(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target?.result as string;
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          document.execCommand('insertHTML', false, img.outerHTML);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  }
+
+  insertButton(): void {
+    const text = prompt('Enter button text:') || 'Click Here';
+    const url = prompt('Enter button URL:') || '#';
+    const buttonHtml = `<a href="${url}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 10px 0;">${text}</a>`;
+    document.execCommand('insertHTML', false, buttonHtml);
+  }
+
+  insertDivider(): void {
+    const dividerHtml = '<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">';
+    document.execCommand('insertHTML', false, dividerHtml);
+  }
+
+  getSignaturePreview(): string {
+    const sig = this.templateForm.signature;
+    if (!sig.name && !sig.title && !sig.company) {
+      return '<p style="color: #6b7280; font-style: italic;">No signature configured</p>';
+    }
+
+    let signatureHtml = '<div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">';
+    
+    if (sig.photoUrl) {
+      signatureHtml += `<img src="${sig.photoUrl}" alt="Profile Photo" style="width: 80px; height: 80px; border-radius: 50%; float: left; margin-right: 15px; margin-bottom: 10px;" />`;
+    }
+    
+    signatureHtml += '<div style="overflow: hidden;">';
+    
+    if (sig.name) {
+      signatureHtml += `<h4 style="margin: 0 0 5px 0; font-size: 16px; color: #1f2937;">${sig.name}</h4>`;
+    }
+    
+    if (sig.title) {
+      signatureHtml += `<p style="margin: 0 0 5px 0; font-size: 14px; color: #3b82f6; font-weight: 600;">${sig.title}</p>`;
+    }
+    
+    if (sig.company) {
+      signatureHtml += `<p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">${sig.company}</p>`;
+    }
+    
+    signatureHtml += '<div style="font-size: 13px; color: #6b7280; line-height: 1.4;">';
+    
+    if (sig.email) {
+      signatureHtml += `<p style="margin: 2px 0;"><strong>Email:</strong> ${sig.email}</p>`;
+    }
+    
+    if (sig.phone) {
+      signatureHtml += `<p style="margin: 2px 0;"><strong>Phone:</strong> ${sig.phone}</p>`;
+    }
+    
+    if (sig.address) {
+      signatureHtml += `<p style="margin: 2px 0;"><strong>Address:</strong> ${sig.address}</p>`;
+    }
+    
+    signatureHtml += '</div></div></div>';
+    
+    return signatureHtml;
+  }
+
+  getFullTemplatePreview(): string {
+    return this.templateForm.content + this.getSignaturePreview();
+  }
+
+  refreshPreview(): void {
+    // Trigger change detection for preview
+    this.templateForm = { ...this.templateForm };
   }
 
   private resetTemplateForm(): void {
     this.templateForm = {
       name: '',
       description: '',
-      content: ''
+      content: '',
+      category: 'welcome',
+      logoUrl: '',
+      signature: {
+        name: '',
+        title: '',
+        company: '',
+        email: '',
+        phone: '',
+        address: '',
+        photoUrl: ''
+      }
     };
+    this.activeTab = 'basic';
   }
 }

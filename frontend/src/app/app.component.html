@@ -1,0 +1,225 @@
+<div class="page">
+  <div class="header card">
+    <div class="section-header">
+      <div>
+        <h1>{{ title }}</h1>
+        <p>Configure your automated email sequence</p>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-success" type="button" (click)="openCreateModal()">
+          <span class="icon">➕</span>
+          Create Template
+        </button>
+        <button class="btn btn-primary" type="button" (click)="openTemplateModal()">
+          <span class="icon">👁️</span>
+          View Templates
+        </button>
+      </div>
+    </div>
+    <p class="status" *ngIf="statusMessage" [ngClass]="{ success: statusType === 'success', error: statusType === 'error' }">
+      {{ statusMessage }}
+    </p>
+  </div>
+
+  <div class="layout">
+    <div class="card sticky-panel">
+      <div class="section-title">General Settings</div>
+
+      <div class="form-group">
+        <label for="campaignName">Campaign Name</label>
+        <input
+          id="campaignName"
+          name="campaignName"
+          type="text"
+          [(ngModel)]="campaignName"
+          placeholder="e.g., Welcome Series 2024"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="numDrips">Number of Drip Emails</label>
+        <div class="inline-group">
+          <input
+            id="numDrips"
+            type="number"
+            min="1"
+            [ngModel]="numDrips"
+            (ngModelChange)="handleDripCountChange($event)"
+          />
+          <button class="btn btn-primary" type="button" (click)="addDrip()">➕</button>
+        </div>
+      </div>
+
+      <div class="form-group info-box">
+        <label for="globalInterval">Send After Previous Email (Global)</label>
+        <select
+          id="globalInterval"
+          [(ngModel)]="globalInterval"
+        >
+          <option *ngFor="let interval of timeIntervals" [ngValue]="interval.value">
+            {{ interval.label }}
+          </option>
+        </select>
+        <button class="btn btn-primary full" type="button" (click)="applyGlobalInterval()">
+          Apply to All Drips
+        </button>
+        <p class="help-text">Set a default interval for all emails (except the first)</p>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-row">
+          <span>Total Emails:</span>
+          <span>{{ drips.length }}</span>
+        </div>
+        <div class="stat-row">
+          <span>Duration:</span>
+          <span>~{{ totalDays }} days</span>
+        </div>
+        <div class="stat-row">
+          <span>Configured:</span>
+          <span>{{ configuredDrips }}/{{ drips.length }}</span>
+        </div>
+      </div>
+
+      <button class="btn btn-success full" type="button" (click)="saveCampaign()" [disabled]="isSaving">
+        {{ isSaving ? 'Saving...' : 'Save Campaign' }}
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Email Workflows</div>
+
+      <div class="workflow-list">
+        <div
+          class="workflow-wrapper"
+          *ngFor="let drip of drips; let index = index; trackBy: trackByDripId"
+        >
+          <div class="workflow-card">
+            <div class="workflow-header">
+              <div class="workflow-meta">
+                <div class="badge">{{ index + 1 }}</div>
+                <div>
+                  <h3>Email #{{ index + 1 }}</h3>
+                  <span *ngIf="index === 0">Sends immediately</span>
+                </div>
+              </div>
+              <button class="btn btn-danger" type="button" (click)="removeDrip(drip.id)" *ngIf="drips.length > 1">
+                ✕
+              </button>
+            </div>
+
+            <div class="grid-two">
+              <div *ngIf="index > 0">
+                <label>Wait Time</label>
+                <select [ngModel]="drip.interval" (ngModelChange)="updateDripInterval(drip.id, $event)">
+                  <option *ngFor="let interval of timeIntervals" [ngValue]="interval.value">
+                    {{ interval.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div [ngClass]="{ 'full-span': index === 0 }">
+                <label>Email Template</label>
+                <select [ngModel]="drip.template" (ngModelChange)="updateDripTemplate(drip.id, $event)">
+                  <option value="">Select template...</option>
+                  <option *ngFor="let template of emailTemplates" [ngValue]="template.id">
+                    {{ template.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="preview-card" *ngIf="drip.template">
+              <div class="preview-header">
+                <div>
+                  <strong>{{ emailTemplates.find((t) => t.id === drip.template)?.name }}</strong>
+                </div>
+                <button type="button" class="link" (click)="previewTemplate(drip.template)">
+                  Preview
+                </button>
+              </div>
+              <p>{{ emailTemplates.find((t) => t.id === drip.template)?.description }}</p>
+            </div>
+          </div>
+
+          <div class="connector" *ngIf="index < drips.length - 1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 14l-7 7-7-7M12 21V3" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showTemplateModal">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>Email Templates</h2>
+        <button type="button" class="btn btn-danger" (click)="closeTemplateModal()">✕</button>
+      </div>
+      <div class="modal-content">
+        <div class="template-card" *ngFor="let template of emailTemplates">
+          <div class="template-header">
+            <div>
+              <h3>{{ template.name }}</h3>
+              <p>{{ template.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showCreateModal">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>Create New Template</h2>
+        <button type="button" class="btn btn-danger" (click)="closeCreateModal()">✕</button>
+      </div>
+      <div class="modal-content">
+        <div class="form-group">
+          <label for="templateName">Template Name</label>
+          <input id="templateName" type="text" [(ngModel)]="templateForm.name" placeholder="e.g., Product Launch Email" />
+        </div>
+        <div class="form-group">
+          <label for="templateDescription">Description</label>
+          <input
+            id="templateDescription"
+            type="text"
+            [(ngModel)]="templateForm.description"
+            placeholder="Brief description of this template"
+          />
+        </div>
+        <div class="form-group">
+          <label for="templateContent">Email Content</label>
+          <textarea
+            id="templateContent"
+            rows="6"
+            [(ngModel)]="templateForm.content"
+            placeholder="Write your email content here..."
+          ></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="closeCreateModal()">Cancel</button>
+          <button type="button" class="btn btn-success" (click)="createTemplate()">Create Template</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="selectedTemplatePreview as templateId">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>{{ emailTemplates.find((t) => t.id === templateId)?.name }}</h2>
+        <button type="button" class="btn btn-danger" (click)="closePreview()">✕</button>
+      </div>
+      <div class="modal-content">
+        <p>{{ emailTemplates.find((t) => t.id === templateId)?.description }}</p>
+        <div class="preview-body">
+          {{ emailTemplates.find((t) => t.id === templateId)?.content || 'Template content preview not available.' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

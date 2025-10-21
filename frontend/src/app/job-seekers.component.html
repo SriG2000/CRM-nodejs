@@ -1,0 +1,110 @@
+<div class="page">
+  <div class="header card">
+    <div class="section-header">
+      <div>
+        <h1>Job Seekers</h1>
+        <p>Select job seekers to create personalized drip campaigns</p>
+      </div>
+      <div class="action-buttons">
+        <button 
+          class="btn btn-primary" 
+          type="button" 
+          (click)="createCampaign()"
+          [disabled]="selectedJobSeekers.size === 0">
+          <span class="icon">📧</span>
+          Create Campaign ({{ selectedJobSeekers.size }})
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <div class="select-all-container">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [checked]="selectAll" 
+            (change)="toggleSelectAll()">
+          <span class="checkmark"></span>
+          Select All
+        </label>
+      </div>
+      <div class="table-info">
+        Showing {{ jobSeekers.length }} job seekers
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="job-seekers-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column"></th>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Experience</th>
+            <th>Location</th>
+            <th>Skills</th>
+            <th>Status</th>
+            <th>Last Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let seeker of jobSeekers; trackBy: trackBySeekerId" 
+            class="table-row"
+            [ngClass]="{ 'selected': selectedJobSeekers.has(seeker.id) }">
+            
+            <td class="checkbox-column">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedJobSeekers.has(seeker.id)"
+                  (change)="toggleSelection(seeker.id)">
+                <span class="checkmark"></span>
+              </label>
+            </td>
+            
+            <td class="name-column">
+              <div class="seeker-info">
+                <div class="seeker-name">{{ seeker.name }}</div>
+                <div class="seeker-email">{{ seeker.email }}</div>
+              </div>
+            </td>
+            
+            <td class="position-column">{{ seeker.position }}</td>
+            
+            <td class="experience-column">{{ seeker.experience }}</td>
+            
+            <td class="location-column">{{ seeker.location }}</td>
+            
+            <td class="skills-column">
+              <div class="skills-container">
+                <span 
+                  *ngFor="let skill of seeker.skills.slice(0, 3)" 
+                  class="skill-tag">
+                  {{ skill }}
+                </span>
+                <span 
+                  *ngIf="seeker.skills.length > 3" 
+                  class="skill-more">
+                  +{{ seeker.skills.length - 3 }}
+                </span>
+              </div>
+            </td>
+            
+            <td class="status-column">
+              <span class="status-badge" [ngClass]="getStatusClass(seeker.status)">
+                {{ getStatusLabel(seeker.status) }}
+              </span>
+            </td>
+            
+            <td class="last-contact-column">
+              {{ seeker.lastContact | date:'MMM dd, yyyy' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -101,6 +101,15 @@ input, select, textarea {
   color: #b91c1c;
 }
 
+.btn-secondary {
+  background: #6b7280;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
 .card {
   background: #fff;
   border-radius: 0.75rem;

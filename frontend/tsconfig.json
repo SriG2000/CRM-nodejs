@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "module": "es2022",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "target": "es2022",
+    "useDefineForClassFields": false,
+    "lib": [
+      "es2020",
+      "dom"
+    ]
+  }
+}
